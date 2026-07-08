@@ -119,6 +119,33 @@ export const ripgrepLayer = Layer.effect(
   }),
 )
 
+// fff refuses to index filesystem roots and home directories, so locations
+// rooted there (notably the home dir, which is the directory picker's default
+// starting point when adding a project) get a degraded search service. Fall
+// back to a single-level readdir + fuzzy match for `find` so the picker still
+// surfaces entries from home instead of an empty list. `glob`/`grep` stay
+// empty in this mode — callers that need them should scope to a real project
+// directory where fff initializes fine.
+const readdirFind = (fs: FSUtil.Interface, input: FileSystem.FindInput, directory: string) =>
+  Effect.gen(function* () {
+    const entries = yield* fs
+      .readDirectoryEntries(directory)
+      .pipe(Effect.orElseSucceed(() => [] as FSUtil.DirEntry[]))
+    const items = entries
+      .filter((entry) => entry.type === "file" || entry.type === "directory")
+      .filter((entry) => (input.type ? entry.type === input.type : true))
+      .map((entry) => ({ name: entry.name, type: entry.type as "file" | "directory" }))
+    const matched = input.query
+      ? fuzzysort.go(input.query, items, { key: "name", limit: input.limit ?? 50 }).map((result) => result.obj)
+      : items.slice(0, input.limit ?? 50)
+    return matched.map((item) =>
+      FileSystem.Entry.make({
+        path: RelativePath.make(item.name + (item.type === "directory" ? path.sep : "")),
+        type: item.type,
+      }),
+    )
+  })
+
 export const fffLayer = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -135,8 +162,9 @@ export const fffLayer = Layer.effect(
     )
     if (!result?.ok) {
       if (result) yield* Effect.logWarning("failed to initialize fff", { error: result.error })
+      const fs = yield* FSUtil.Service
       return Service.of({
-        find: () => Effect.succeed([]),
+        find: (input) => readdirFind(fs, input, location.directory),
         glob: () => Effect.succeed([]),
         grep: () => Effect.succeed([]),
       })

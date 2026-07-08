@@ -140,6 +140,9 @@ test("resolves directory autocomplete from the current browser root", async () =
           return Promise.resolve({ data: [] })
         },
       },
+      file: {
+        list: () => Promise.resolve({ data: [] }),
+      },
     },
   } as unknown as Parameters<typeof createDirectorySearch>[0]["sdk"]
   let base = "/repo"

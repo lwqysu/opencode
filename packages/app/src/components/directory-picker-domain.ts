@@ -376,7 +376,13 @@ export function createDirectorySearch(args: { sdk: ServerSDK; base: () => string
         .then((result) => result.data ?? [])
         .catch(() => [])
       if (!active()) return []
-      return results.map((path) => joinPickerPath(input.directory, path)).slice(0, 50)
+      if (results.length > 0) return results.map((path) => joinPickerPath(input.directory, path)).slice(0, 50)
+      // fff refuses to index the home directory and filesystem roots, so
+      // /find/file returns nothing when the picker is rooted at home (the
+      // default starting point for adding a project). Fall back to a readdir
+      // listing — same mechanism the slash-path branch below uses — so the
+      // picker still surfaces directories from home.
+      return (await match(input.directory, query, 50)).slice(0, 50)
     }
     const segments = query.replace(/^\/+/, "").split("/")
     const head = segments.slice(0, -1).filter((part) => part && part !== ".")
