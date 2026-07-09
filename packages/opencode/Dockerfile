@@ -27,16 +27,19 @@ ARG USER_GID=10009
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# 创建日志和运行目录
-RUN mkdir -p /var/log/opencode /var/run /workspace
-
 # 创建 abat 用户组和用户（与 ABAT 项目统一）
 RUN addgroup -g ${USER_GID} abat && \
     adduser -D -u ${USER_UID} -G abat abat && \
     echo "abat:abat" | chpasswd
 
-# 设置目录权限
-RUN chown -R abat:abat /var/log/opencode /var/run /workspace
+# 创建日志、运行目录和挂载点父目录（在 root 身份下 chown）
+RUN mkdir -p \
+    /var/log/opencode \
+    /var/run \
+    /workspace \
+    /home/abat/.config/opencode \
+    /home/abat/.local/share/opencode \
+ && chown -R abat:abat /var/log/opencode /var/run /workspace /home/abat
 
 # 配置 Git
 RUN git config --global core.longpaths true && \

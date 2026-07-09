@@ -79,8 +79,9 @@ echo "  2. cd ${SERVER_DIR}"
 echo "  3. docker build -t opencode:latest ."
 echo "  4. docker run -d --name opencode-server \
   -p 4096:4096 \
-  -v /home/abat/ABAT:/workspace \
-  -v /home/abat/.opencode:/root/.local/share/opencode \
+  -v /data/abat/ABAT:/workspace:Z \
+  -v /data/abat/.opencode:/home/abat/.local/share/opencode:Z \
+  -v /data/abat/.config/opencode:/home/abat/.config/opencode:Z \
   -e PORT=4096 \
   -e HOSTNAME=0.0.0.0 \
-  opencode:latest"
+  opencode:latest "
