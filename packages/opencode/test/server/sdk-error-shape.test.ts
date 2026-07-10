@@ -1,8 +1,8 @@
 /**
  * Regression tests for the SDK error shape — the v2 SDK's `throwOnError: true`
  * path used to throw raw values (empty strings or POJOs from JSON-decoded
- * error bodies). The TUI catches those and `e.message`/`e.stack` are
- * undefined, so users see `[object Object]` or a blank crash.
+ * error bodies). Callers that expect real Error objects then see blank messages
+ * or `[object Object]`.
  *
  * Both cases must throw a real `Error` instance with a non-empty `.message`
  * extracted from the response body, plus `.status` and `.body` attached.

@@ -432,20 +432,20 @@ test("loads project config from Cygwin paths on Windows", async () => {
   })
 })
 
-it.instance("ignores legacy tui keys in opencode config", () =>
+it.instance("ignores legacy UI keys in opencode config", () =>
   Effect.gen(function* () {
     const test = yield* TestInstance
     yield* writeConfigEffect(test.directory, {
       $schema: "https://opencode.ai/config.json",
       model: "test/model",
       theme: "legacy",
-      tui: { scroll_speed: 4 },
+      keybinds: { leader: "ctrl+x" },
     })
 
     const config = yield* Config.use.get()
     expect(config.model).toBe("test/model")
     expect((config as Record<string, unknown>).theme).toBeUndefined()
-    expect((config as Record<string, unknown>).tui).toBeUndefined()
+    expect((config as Record<string, unknown>).keybinds).toBeUndefined()
   }),
 )
 

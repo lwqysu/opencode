@@ -278,7 +278,7 @@ describe("workspace HttpApi", () => {
     }),
   )
 
-  it.live("creates workspace with the TUI payload shape", () =>
+  it.live("creates workspace with the client payload shape", () =>
     Effect.gen(function* () {
       Flag.OPENCODE_EXPERIMENTAL_WORKSPACES = true
       const dir = yield* tmpdirScoped({ git: true })

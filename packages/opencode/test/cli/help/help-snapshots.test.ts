@@ -8,7 +8,7 @@
 // diff tells you exactly which command(s) changed.
 //
 // Snapshots are taken at COLUMNS=120 so wrapping is stable across
-// terminal sizes. The default opencode tui command is excluded —
+// terminal sizes. The default opencode command is excluded —
 // `opencode --help` includes an ASCII banner that pulls in the install
 // version (changes per release), so we'd snapshot a moving target.
 import { describe, expect } from "bun:test"
@@ -38,52 +38,14 @@ function normalize(text: string): string {
   })
 }
 
-// Top-level commands. Order matches what `opencode --help` prints today;
-// keep it in that order so the snapshot file reads as a table of contents.
-// `completion` is intentionally excluded — it's a yargs built-in that emits
-// top-level help on `--help` and exits 1; not a real opencode command.
-const TOP_LEVEL = [
-  "acp",
-  "mcp",
-  "attach",
-  "run",
-  "debug",
-  "providers", // aliased to `auth`
-  "agent",
-  "upgrade",
-  "uninstall",
-  "serve",
-  "web",
-  "models",
-  "stats",
-  "export",
-  "import",
-  "github",
-  "pr",
-  "session",
-  "plugin",
-  "db",
-] as const
+// Top-level commands. The packaged service build intentionally exposes only
+// the service and web UI entrypoints.
+const TOP_LEVEL = ["serve", "web"] as const
 
 // Subcommands worth pinning. Not exhaustive — the goal is one snapshot per
 // distinct argv shape, not every leaf. Add new entries when a subcommand
 // gains user-visible flags that we want to lock in.
-const SUBCOMMANDS = [
-  ["mcp", "list"],
-  ["mcp", "add"],
-  ["mcp", "auth"],
-  ["mcp", "logout"],
-  ["providers", "list"],
-  ["providers", "login"],
-  ["providers", "logout"],
-  ["agent", "create"],
-  ["agent", "list"],
-  ["session", "list"],
-  ["session", "delete"],
-  ["github", "install"],
-  ["github", "run"],
-  ["db", "path"],
-] as const
+const SUBCOMMANDS = [] as const
 
 // Fixed wrap width so a developer's terminal doesn't affect snapshots.
 // yargs honors COLUMNS; CI runners typically default to 80 which produces
@@ -101,7 +63,6 @@ describe("opencode CLI help-text snapshots", () => {
         const topLevel = yield* opencode.spawn(["--help"], { env: SNAPSHOT_ENV })
         expect(topLevel.exitCode).toBe(0)
         expect(topLevel.stderr.endsWith("\n")).toBe(true)
-        expect(topLevel.stderr).toContain("--mini")
         expect(topLevel.stderr).not.toContain("--thinking")
         expect(topLevel.stderr).not.toContain("--variant")
         expect(topLevel.stderr).not.toContain("--demo")

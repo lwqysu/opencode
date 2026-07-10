@@ -1,1 +1,8 @@
-export * from "@opencode-ai/tui/logo"
+export function go(pad = "") {
+  return [
+    `${pad}                                ▄     `,
+    `${pad}█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█`,
+    `${pad}█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
+    `${pad}▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
+  ].join("\n")
+}

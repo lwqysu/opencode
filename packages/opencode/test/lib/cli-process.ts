@@ -171,7 +171,7 @@ export type OpencodeCli = {
   readonly expectExit: (result: RunResult, expected: number, label?: string) => void
   // Parse `--format json` stdout into one event object per non-empty line.
   // The CLI writes `JSON.stringify({ type, sessionID, ... }) + EOL` for each
-  // event (see src/cli/cmd/run.ts `emit`). Throws on a malformed line so
+  // emitted event. Throws on a malformed line so
   // tests fail loudly rather than silently skipping data.
   readonly parseJsonEvents: (stdout: string) => Array<Record<string, unknown>>
 }
@@ -208,8 +208,7 @@ export function withCliFixture<A, E>(
       const start = Date.now()
       const timeoutMs = opts?.timeoutMs ?? 30_000
       // stdin: "ignore" so the child doesn't see a piped stdin and block
-      // on `Bun.stdin.text()` (see src/cli/cmd/run.ts — non-TTY stdin is
-      // consumed as the prompt). The old Process.run wrapper defaulted to
+      // by treating non-TTY stdin as the prompt. The old Process.run wrapper defaulted to
       // ignore; ChildProcess.make defaults to pipe, so we set it explicitly.
       const command = ChildProcess.make("bun", ["run", "--conditions=browser", cliEntry, ...args], {
         cwd: home,
