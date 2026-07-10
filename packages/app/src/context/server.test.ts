@@ -3,6 +3,7 @@ import { createRoot, createSignal } from "solid-js"
 import { createStore } from "solid-js/store"
 import {
   createServerProjects,
+  mergeServerProjects,
   migrateCanonicalLocalServerState,
   nextServerAfterRemoval,
   resolveServerList,
@@ -93,6 +94,37 @@ test("active server removal falls back across built-in and persisted servers", (
       ServerConnection.Key.make("sidecar"),
     ),
   ).toBe(ServerConnection.Key.make("sidecar"))
+})
+
+test("mergeServerProjects includes server projects missing from local browser state", () => {
+  expect(
+    mergeServerProjects(
+      [{ worktree: "/opened", expanded: false }],
+      [
+        {
+          id: "proj_opened",
+          worktree: "/opened",
+          time: { created: 1, updated: 1 },
+          sandboxes: [],
+        },
+        {
+          id: "proj_remote",
+          worktree: "/remote",
+          time: { created: 2, updated: 2 },
+          sandboxes: [],
+        },
+      ],
+    ),
+  ).toEqual([
+    { worktree: "/opened", expanded: false },
+    {
+      id: "proj_remote",
+      worktree: "/remote",
+      time: { created: 2, updated: 2 },
+      sandboxes: [],
+      expanded: true,
+    },
+  ])
 })
 
 describe("createServerProjects", () => {

@@ -5,7 +5,7 @@ import { createSimpleContext } from "@opencode-ai/ui/context"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import { useServerSync } from "./server-sync"
 import { useServerSDK } from "./server-sdk"
-import { RECENTLY_CLOSED_DISPLAY_LIMIT, ServerConnection, useServer } from "./server"
+import { mergeServerProjects, RECENTLY_CLOSED_DISPLAY_LIMIT, ServerConnection, useServer } from "./server"
 import { usePlatform } from "./platform"
 import { Project } from "@opencode-ai/sdk/v2"
 import { Persist, persisted, removePersisted } from "@/utils/persist"
@@ -506,7 +506,8 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
       })
     })
 
-    const enriched = createMemo(() => server.projects.list().map(enrich))
+    const displayedProjects = createMemo(() => mergeServerProjects(server.projects.list(), serverSync().data.project))
+    const enriched = createMemo(() => displayedProjects().map(enrich))
     const list = createMemo(() => {
       const projects = enriched()
       return projects.map((project) => {
@@ -580,7 +581,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         sessionTimer = window.setTimeout(() => {
           sessionTimer = undefined
           void Promise.all(
-            server.projects.list().map((project) => {
+            displayedProjects().map((project) => {
               return serverSync().project.loadSessions(project.worktree)
             }),
           )

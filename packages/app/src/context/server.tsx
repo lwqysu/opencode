@@ -4,6 +4,7 @@ import { createStore, type SetStoreFunction, type Store } from "solid-js/store"
 import { Persist, persisted } from "@/utils/persist"
 import { pathKey } from "@/utils/path-key"
 import { ServerScope } from "@/utils/server-scope"
+import type { Project } from "@opencode-ai/sdk/v2/client"
 
 type StoredProject = { worktree: string; expanded: boolean }
 type StoredServer = string | ServerConnection.HttpBase | ServerConnection.Http
@@ -19,6 +20,16 @@ const HEALTH_POLL_INTERVAL_MS = 10_000
 // filtered out do not evict still-visible ones from the persisted store.
 const RECENTLY_CLOSED_HISTORY_LIMIT = 16
 export const RECENTLY_CLOSED_DISPLAY_LIMIT = 5
+
+export function mergeServerProjects<T extends StoredProject>(stored: readonly T[], available: readonly Project[]) {
+  const storedKeys = new Set(stored.map((project) => pathKey(project.worktree)))
+  return [
+    ...stored,
+    ...available
+      .filter((project) => !storedKeys.has(pathKey(project.worktree)))
+      .map((project) => ({ ...project, expanded: true })),
+  ]
+}
 
 export function normalizeServerUrl(input: string) {
   const trimmed = input.trim()
